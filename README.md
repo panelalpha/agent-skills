@@ -7,17 +7,23 @@ plugin is installed as `<plugin>@panelalpha`.
 |---|---|---|
 | `engine` | PanelAlpha Engine, the hosting engine (MCP on port 2011) | `panelalpha-engine` |
 
-Each plugin folder works in Claude Code, Codex and OpenCode:
+Each plugin folder works in Claude Code, Codex, Cursor, Grok and OpenCode:
 
 | File | Read by |
 |---|---|
-| `.claude-plugin/plugin.json`, `.mcp.json` | Claude Code |
+| `.claude-plugin/plugin.json`, `.mcp.json` | Claude Code (`${user_config.*}`) |
 | `.codex-plugin/plugin.json` | Codex (`mcpServers: {}` stops it loading Claude's `.mcp.json`) |
+| `.cursor-plugin/plugin.json`, `mcp.json` | Cursor (`${PANELALPHA_MCP_*}` variables) |
+| `.grok-plugin/plugin.json`, `mcp.json` | Grok (same placeholders, from the environment) |
 | `package.json`, `opencode.js` | OpenCode |
-| `skills/` | all three |
+| `skills/` | all of them |
 
-The marketplace files at the top are `.claude-plugin/marketplace.json` for Claude Code and
-`.agents/plugins/marketplace.json` for Codex.
+`mcp.json` is pinned from the Cursor and Grok manifests so they do not pick up
+Claude's `.mcp.json`. Codex still registers the MCP server on its own.
+
+The marketplace files at the top are `.claude-plugin/marketplace.json` for Claude Code,
+`.agents/plugins/marketplace.json` for Codex, `.cursor-plugin/marketplace.json` for Cursor
+and `.grok-plugin/marketplace.json` for Grok.
 
 ## engine
 
@@ -54,6 +60,59 @@ claude plugin install engine@panelalpha \
   connect.
 - To update: `claude plugin marketplace update panelalpha`, then `claude plugin update engine@panelalpha`.
 
+### Cursor
+
+Cursor has no one-line install CLI. The plugin is the `engine/` folder; URL and token are plugin
+variables, set in **Customize → Plugins → engine → Configure**, not in `mcp.json`.
+
+**Team marketplace** (Teams / Enterprise): Dashboard → Plugins → Import from Repo →
+`https://github.com/panelalpha/agent-skills`. Install `engine`, then set:
+
+- `PANELALPHA_MCP_URL` — `https://<engine-host>:2011/mcp`
+- `PANELALPHA_MCP_TOKEN` — from `pae mcp:connect cursor`
+
+**This machine only:**
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -s /path/to/agent-skills/engine ~/.cursor/plugins/local/engine
+```
+
+Reload the window (**Developer: Reload Window**). The plugin appears in Customize. Set the two
+variables. `/mcp` / Tools & MCP should list `panelalpha-engine`.
+
+A `panelalpha` server already in `~/.cursor/mcp.json` will show up twice; remove it.
+
+On a self-signed engine, Cursor launched from a desktop icon will not see `NODE_EXTRA_CA_CERTS`
+from your shell. Start it from a terminal where that is set, or give the engine a real certificate.
+
+### Grok
+
+Grok expands `${PANELALPHA_MCP_URL}` and `${PANELALPHA_MCP_TOKEN}` from the environment. Put both
+in your shell profile; the plugin will not prompt for them.
+
+```bash
+grok plugin marketplace add panelalpha/agent-skills
+grok plugin install engine --trust
+
+export PANELALPHA_MCP_URL=https://<engine-host>:2011/mcp
+export PANELALPHA_MCP_TOKEN=<token>
+```
+
+`--trust` is required or the MCP server stays blocked. Check with `grok mcp list` / `/mcps`; the
+server name is `panelalpha-engine`. Skills are `/engine:create-project` and `/engine:debug-project`.
+
+If the plugin's MCP server does not start, register it yourself (a `panelalpha-engine` server
+already in config wins over the plugin):
+
+```bash
+grok mcp add --transport http panelalpha-engine "$PANELALPHA_MCP_URL" \
+  --header "Authorization: Bearer $PANELALPHA_MCP_TOKEN"
+```
+
+`--transport http` is required. To update: `grok plugin marketplace update panelalpha`, then
+`grok plugin update engine`.
+
 ### Codex
 
 A Codex plugin cannot take a per-user URL or token, so the plugin brings the skills and the MCP server is
@@ -88,12 +147,12 @@ already in `opencode.json` wins over it. Check with `opencode mcp list` and `ope
 
 Put it next to `engine/`, for example `panel/`, and keep it separate from `engine/` everywhere:
 
-- Its own plugin name, used as the folder name and in both manifests.
+- Its own plugin name, used as the folder name and in every marketplace file.
 - Its own MCP server name, such as `panelalpha-panel`.
-- Its own `userConfig`, so each product has its own URL and token.
-- Skill descriptions that name the product, so Claude does not pick an engine skill for a panel task.
+- Its own `userConfig` (Claude) and `variables` (Cursor), so each product has its own URL and token.
+- Skill descriptions that name the product, so an agent does not pick an engine skill for a panel task.
 
-Then add an entry for it to both marketplace files.
+Then add an entry for it to every marketplace file (Claude, Codex, Cursor, Grok).
 
 ## Notes
 
