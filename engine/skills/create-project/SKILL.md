@@ -27,7 +27,6 @@ Check `deployable`, `services` (needs a database?) and `environment` (variables 
 - `domain` - leave empty for a free `*.panelalpha.online` name with a trusted certificate; or the user's own domain together with `tunnel: "none"`
 - `git_repo` - repo URL; this one call clones, builds and starts the app
 - `git_branch`, `git_token` - branch / private repo (never put a token in the URL)
-- `template: "dind"` - instead of `git_repo`, when the files come in step 3
 - `env_vars` - `{"KEY": "value"}`, stored and applied on every deploy
 
 On an error read `problems[]` (`name_taken`, `domain_taken`, `template_not_found`, ...), fix all of them, then retry.
