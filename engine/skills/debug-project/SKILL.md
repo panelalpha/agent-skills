@@ -14,9 +14,10 @@ OpenCode: `url` / `token` options on the plugin, or `PANELALPHA_MCP_URL` / `PANE
 ## 1. Check status
 
 - `project_get` - `deployment_status`, `health_healthy`, `deploy_port`, `app_port`
-- `deploy_log_get` with `offset: 100000` - `status`, `stage`, `error`
+- Deployed by `project_create`: `task_get` with the task `id` - `status`, `details.error`; `task_log_list` with `after_id` for the log lines
+- Deployed by `project_rebuild` / `project_deploy_archive`: `deploy_log_get` with `offset: 100000` - `status`, `stage`, `error`
 
-Still `running`? Wait and poll every 20-30 s; it is not a failure.
+Still `queued` or `running`? Wait and poll every 20-30 s; it is not a failure.
 
 ## 2. Read the failure code
 
@@ -32,7 +33,7 @@ A failed deploy returns `problems[].code`. Show the user the `message` and fix b
 | `env-validation-failed`, `database-auth-failed` | correct `env_vars` or the MySQL password, then rebuild |
 | `repo-auth-failed`, `repo-not-found` | check the URL, pass `git_token` |
 | `app_did_not_start` | go to step 3 |
-| anything else | `deploy_log_get` from `deploy_log_offset` - the command output is there |
+| anything else | `deploy_log_get` from `deploy_log_offset` (a `project_create` deploy: `task_log_list`) - the command output is there |
 
 ## 3. Read the app logs
 
