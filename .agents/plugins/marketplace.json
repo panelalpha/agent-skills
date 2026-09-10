@@ -1,0 +1,20 @@
+{
+  "name": "panelalpha",
+  "interface": {
+    "displayName": "PanelAlpha"
+  },
+  "plugins": [
+    {
+      "name": "engine",
+      "source": {
+        "source": "local",
+        "path": "./engine"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

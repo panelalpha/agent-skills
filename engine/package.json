@@ -1,0 +1,12 @@
+{
+  "name": "opencode-panelalpha-engine",
+  "version": "0.1.0",
+  "description": "OpenCode plugin for PanelAlpha Engine: the MCP server plus skills for creating and debugging projects",
+  "type": "module",
+  "main": "opencode.js",
+  "exports": "./opencode.js",
+  "files": ["opencode.js", "skills"],
+  "keywords": ["opencode", "opencode-plugin", "panelalpha", "mcp"],
+  "homepage": "https://panelalpha.com",
+  "license": "MIT"
+}

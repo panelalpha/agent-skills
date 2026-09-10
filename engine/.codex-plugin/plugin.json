@@ -1,0 +1,21 @@
+{
+  "name": "engine",
+  "version": "0.1.0",
+  "description": "Skills for creating, deploying and debugging projects on a PanelAlpha Engine over its MCP server.",
+  "author": {
+    "name": "PanelAlpha",
+    "url": "https://panelalpha.com"
+  },
+  "homepage": "https://panelalpha.com",
+  "keywords": ["panelalpha", "hosting", "deploy", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": {},
+  "interface": {
+    "displayName": "PanelAlpha Engine",
+    "shortDescription": "Deploy and debug apps on a PanelAlpha Engine",
+    "developerName": "PanelAlpha",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://panelalpha.com"
+  }
+}

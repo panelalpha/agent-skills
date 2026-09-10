@@ -1,0 +1,26 @@
+{
+  "name": "engine",
+  "version": "0.1.0",
+  "description": "PanelAlpha Engine, the hosting engine: its MCP server plus skills for creating and deploying a project and for debugging one that fails.",
+  "author": {
+    "name": "PanelAlpha",
+    "url": "https://panelalpha.com"
+  },
+  "homepage": "https://panelalpha.com",
+  "keywords": ["panelalpha", "hosting", "deploy", "mcp"],
+  "userConfig": {
+    "server_url": {
+      "type": "string",
+      "title": "PanelAlpha Engine MCP URL",
+      "description": "The engine's MCP endpoint, as printed by `pae mcp:token:create`, e.g. https://203.0.113.10:2011/mcp",
+      "required": true
+    },
+    "api_token": {
+      "type": "string",
+      "title": "PanelAlpha Engine MCP token",
+      "description": "Bearer token from `pae mcp:token:create <name> --short` on the engine host",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}
