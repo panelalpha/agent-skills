@@ -29,6 +29,8 @@ Check `deployable`, `services` (needs a database?) and `environment` (variables 
 - `git_branch`, `git_token` - branch / private repo (never put a token in the URL)
 - `env_vars` - `{"KEY": "value"}`, stored and applied on every deploy
 
+It returns `202` with a task and deploys in the background: keep the task `id` for step 5.
+
 On an error read `problems[]` (`name_taken`, `domain_taken`, `template_not_found`, ...), fix all of them, then retry.
 
 ## 3. Files without git
@@ -47,11 +49,17 @@ Always under `/project/`.
 
 ## 5. Check status
 
-`deploy_log_get`
+After `project_create`, follow the task:
+- `task_get` - `id` from step 2: `status` `queued` / `running` / `completed` / `failed` / `cancelled`, the first log lines and `next_after_id`
+- `task_log_list` - `id`, `after_id: <next_after_id>` - only the new log lines (`stage`, `level`, `msg`)
+- `completed` - `details.deployment_status` is `success`, or `partial` with `details.deployment_warnings`; `details.waiting_for_files: true` means there was no git repo, so deploy the files as in step 3
+- `failed` - the reason is `details.error`, the stage is in the last log lines. A failed create may roll the account back: `project_get` still finds it → fix and `project_rebuild`; 404 → fix and `project_create` again
+
+`deploy_log_get` may answer 404 for a `project_create` deploy - read the task instead. `project_rebuild` and `project_deploy_archive` deploy synchronously; check them with `deploy_log_get`:
 - `offset: 100000` - status only: `running` / `success` / `failed`, `stage`, `error`
 - `offset: 0` - the full log
 
-Deploys take ~5 s (static) to ~6 min (Laravel, Next.js). If the call times out the deploy keeps going: poll every 20-30 s and **never re-run `project_create`**.
+Deploys take ~5 s (static) to ~6 min (Laravel, Next.js). Poll every 20-30 s and **never re-run `project_create`** while its task is `queued` or `running`.
 Failed → use the **debug-project** skill.
 
 ## 6. Verify
