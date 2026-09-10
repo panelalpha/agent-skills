@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "panelalpha-engine": {
+      "type": "http",
+      "url": "${PANELALPHA_MCP_URL}",
+      "headers": {
+        "Authorization": "Bearer ${PANELALPHA_MCP_TOKEN}"
+      }
+    }
+  }
+}

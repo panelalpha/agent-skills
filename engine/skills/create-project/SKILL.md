@@ -8,7 +8,9 @@ description: Create a project on a PanelAlpha Engine (the hosting engine, MCP on
 Tools come from the PanelAlpha Engine MCP server, `panelalpha-engine`. Use only its tools, not another PanelAlpha server's. Every tool takes the project as `name`.
 
 Not connected? On the engine host `pae mcp:connect` lists the agents and prints the command for each.
-Claude Code: `/plugin` → engine. Codex: `codex mcp add panelalpha-engine --url <url> --bearer-token-env-var PANELALPHA_MCP_TOKEN`.
+Claude Code: `/plugin` → engine. Cursor: Customize → engine → set `PANELALPHA_MCP_URL` and `PANELALPHA_MCP_TOKEN`.
+Codex: `codex mcp add panelalpha-engine --url <url> --bearer-token-env-var PANELALPHA_MCP_TOKEN`.
+Grok: `PANELALPHA_MCP_URL` / `PANELALPHA_MCP_TOKEN` in the environment, or `grok mcp add --transport http panelalpha-engine <url> --header "Authorization: Bearer <token>"`.
 OpenCode: `url` / `token` options on the plugin, or `PANELALPHA_MCP_URL` / `PANELALPHA_MCP_TOKEN`.
 
 ## 1. Inspect the repo (git only)

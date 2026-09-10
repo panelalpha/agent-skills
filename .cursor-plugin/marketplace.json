@@ -1,0 +1,18 @@
+{
+  "name": "panelalpha",
+  "owner": {
+    "name": "PanelAlpha",
+    "url": "https://panelalpha.com"
+  },
+  "metadata": {
+    "description": "PanelAlpha plugins for Cursor, one per product"
+  },
+  "plugins": [
+    {
+      "name": "engine",
+      "source": "./engine",
+      "description": "PanelAlpha Engine: its MCP server plus project creation and debugging skills",
+      "version": "0.1.0"
+    }
+  ]
+}

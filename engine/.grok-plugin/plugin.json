@@ -1,0 +1,13 @@
+{
+  "name": "engine",
+  "version": "0.1.0",
+  "description": "PanelAlpha Engine, the hosting engine: its MCP server plus skills for creating and deploying a project and for debugging one that fails.",
+  "author": {
+    "name": "PanelAlpha",
+    "url": "https://panelalpha.com"
+  },
+  "homepage": "https://panelalpha.com",
+  "keywords": ["panelalpha", "hosting", "deploy", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
+}

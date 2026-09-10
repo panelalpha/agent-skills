@@ -1,0 +1,22 @@
+{
+  "name": "panelalpha",
+  "description": "PanelAlpha plugins for Grok, one per product",
+  "owner": {
+    "name": "PanelAlpha",
+    "url": "https://panelalpha.com"
+  },
+  "plugins": [
+    {
+      "name": "engine",
+      "source": {
+        "type": "local",
+        "path": "./engine"
+      },
+      "description": "PanelAlpha Engine: its MCP server plus project creation and debugging skills",
+      "version": "0.1.0",
+      "category": "deployment",
+      "homepage": "https://panelalpha.com",
+      "keywords": ["panelalpha", "hosting", "deploy", "mcp"]
+    }
+  ]
+}
