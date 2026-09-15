@@ -9,5 +9,5 @@
   "homepage": "https://panelalpha.com",
   "keywords": ["panelalpha", "hosting", "deploy", "mcp"],
   "skills": "./skills/",
-  "mcpServers": "./mcp.json"
+  "mcpServers": "./mcp-none.json"
 }
