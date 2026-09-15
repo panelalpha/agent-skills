@@ -1,0 +1,13 @@
+{
+  "id": "panelalpha-engine",
+  "name": "PanelAlpha Engine",
+  "description": "Skills for creating, deploying and debugging projects on a PanelAlpha Engine. Register the MCP server with `openclaw mcp add`; this package does not ship credentials.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  },
+  "skills": ["./skills/"],
+  "mcpServers": {}
+}

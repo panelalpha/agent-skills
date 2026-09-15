@@ -8,11 +8,15 @@ description: Create a project on a PanelAlpha Engine (the hosting engine, MCP on
 Tools come from the PanelAlpha Engine MCP server, `panelalpha-engine`. Use only its tools, not another PanelAlpha server's. Every tool takes the project as `name`.
 
 Not connected? On the engine host `pae mcp:connect` lists the agents and prints the command for each.
-Claude Code: `/plugin` → engine. Cursor: `cursor --add-mcp` (printed by `pae mcp:connect cursor`).
-Codex: `codex mcp add panelalpha-engine --url <url> --bearer-token-env-var PANELALPHA_MCP_TOKEN`.
-Gemini: `gemini mcp add --transport http panelalpha-engine <url> --scope user --header "Authorization: Bearer <token>"`.
+Claude Code: `/plugin` → engine. Cursor: paste the JSON from `pae mcp:connect cursor` into Settings → Tools & MCP.
+Codex: `PANELALPHA_MCP_TOKEN='<token>' codex mcp add panelalpha-engine --url <url> --bearer-token-env-var PANELALPHA_MCP_TOKEN`.
+Gemini: `gemini mcp add --transport http --header "Authorization: Bearer <token>" panelalpha-engine <url>`.
 Grok: `grok mcp add --transport http panelalpha-engine <url> --header "Authorization: Bearer <token>"`.
 OpenCode: `url` / `token` options on the plugin, or `PANELALPHA_MCP_URL` / `PANELALPHA_MCP_TOKEN`.
+Windsurf: `devin mcp add -s user -H "Authorization: Bearer <token>" panelalpha-engine <url>`.
+Pi: `pi install npm:pi-mcp-adapter`, then paste the `pae mcp:connect pi` JSON into `~/.config/mcp/mcp.json`.
+Hermes: `hermes mcp add panelalpha-engine --url <url> --auth header`.
+OpenClaw: `openclaw mcp add panelalpha-engine --url <url> --transport streamable-http --header "Authorization: Bearer <token>"`.
 
 ## 1. Inspect the repo (git only)
 
