@@ -1,203 +1,201 @@
-# PanelAlpha agent plugins
+<div align="center">
 
-Plugins for AI coding agents, one per PanelAlpha product. The marketplace is `panelalpha`, and each
-plugin is installed as `<plugin>@panelalpha`.
+<h1>PanelAlpha agent skills</h1>
 
-| Plugin | Product | MCP server |
-|---|---|---|
-| `engine` | PanelAlpha Engine, the hosting engine (MCP on port 2011) | `panelalpha-engine` |
+<p>
+Plugins for the AI assistant you already use. They teach it how to put a site on PanelAlpha Engine, and how to debug one that failed.
+</p>
 
-Each plugin folder works in Claude Code, Codex, Cursor, Gemini, Grok, OpenCode,
-Windsurf (Devin Desktop), Pi, Hermes and OpenClaw:
+<p>
+<a href="#set-it-up"><b>Get started</b></a> ·
+<a href="#things-you-can-just-ask-for">Things you can ask for</a> ·
+<a href="#your-assistant"><b>Your assistant</b></a> ·
+<a href="#talk-to-us-on-discord"><b>Discord</b></a> ·
+<a href="#faq">FAQ</a>
+</p>
 
-| File | Read by |
-|---|---|
-| `.claude-plugin/plugin.json`, `.mcp.json` | Claude Code (`${user_config.*}`) |
-| `.codex-plugin/plugin.json` | Codex (`mcpServers: {}` — MCP is registered with `codex mcp add`) |
-| `.cursor-plugin/plugin.json` | Cursor (pins `mcp-none.json`; MCP is the JSON from `pae connect cursor`) |
-| `gemini-extension.json` | Gemini (`mcpServers: {}` — MCP is registered with `gemini mcp add`) |
-| `.grok-plugin/plugin.json` | Grok (pins `mcp-none.json` so it does not load Claude's `.mcp.json`; MCP is `grok mcp add`) |
-| `package.json`, `opencode.js` | OpenCode |
-| `.devin-plugin/plugin.json` | Windsurf / Devin Desktop (pins `mcp-none.json`; MCP is `pae connect windsurf`) |
-| `package.json` `pi` key | Pi (`pi install` loads `./skills`; MCP is `pae connect pi`) |
-| `plugin.json`, `mcp.json` | Hermes (Agent Plugins v1; `mcpServers` is empty — MCP is `hermes mcp add`) |
-| `openclaw.plugin.json` | OpenClaw (skills pack; `mcpServers` is empty — MCP is `openclaw mcp add`) |
-| `skills/` | all of them |
+<p>
+<a href="#set-it-up"><img src="https://img.shields.io/badge/skills-create%20%2B%20debug-2f8f46" alt="create and debug skills"></a>
+<a href="#your-assistant"><img src="https://img.shields.io/badge/assistants-10-6f42c1" alt="10 assistants"></a>
+<a href="#license"><img src="https://img.shields.io/badge/license-MIT-0b7285" alt="MIT"></a>
+<a href="https://discord.gg/9twHWR7xGX"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Join Discord"></a>
+</p>
 
-Codex, Cursor, Gemini, Grok, Windsurf, Pi, Hermes and OpenClaw cannot take a per-user
-URL or token on plugin install, so those manifests leave `mcpServers` empty. The
-engine's `pae connect` command writes the connection into each client's own
-config, including `hermes` and `openclaw`.
+</div>
 
-The marketplace files at the top are `.claude-plugin/marketplace.json` for Claude Code,
-`.agents/plugins/marketplace.json` for Codex, `.cursor-plugin/marketplace.json` for Cursor
-and `.grok-plugin/marketplace.json` for Grok. Gemini, Windsurf, Pi, Hermes and OpenClaw
-have no marketplace file here — `gemini-extension.json`, `.devin-plugin/plugin.json`,
-the `pi` key on `package.json`, `plugin.json` and `openclaw.plugin.json` sit in
-`engine/` and are installed by path (or `owner/repo#engine` for Devin). `mcp.json`
-is the Agent Plugins document (empty servers). Cursor, Grok and Windsurf pin
-`mcp-none.json` instead, so they do not treat Claude's `.mcp.json` as their MCP config.
+---
 
-## engine
+## In short
 
-Skills: `create-project` (create a project, deploy an app, verify it) and `debug-project` (why a deploy
-fails or a site does not answer).
+**PanelAlpha Engine** is what you install on a VPS. **This repo** is what you install in your assistant, on your own computer.
 
-### Get a token
+- **Two skills.** `create-project` puts a site online. `debug-project` reads the log and fixes what it can when a deploy fails or a site does not answer.
+- **You ask in plain words.** The assistant talks to the engine over **MCP**, the interface it uses to call tools on your server.
+- **The engine stays in charge.** The AI never gets root. What it may do is decided on the server, before you connect it.
 
-The engine installer's last line is the Claude Code command with a token already in it. For another agent,
-or a new token, run this on the engine host:
+You need an engine first. If you do not have one yet:
 
 ```bash
-pae connect          # lists the supported agents
-pae connect claude   # a fresh token plus the exact command for that agent
+curl -fsSL https://get.panelalpha.com/engine | sh
 ```
 
-### Claude Code
+[**Join the Discord**](https://discord.gg/9twHWR7xGX). That is the main place to ask, show what you deployed, and talk to the people who build this.
+
+---
+
+## Set it up
+
+### 1. Engine is on your VPS
+
+The engine is the hosting. These plugins do not replace it.
+
+### 2. Get the commands for your assistant
+
+On the **engine server**, not on your laptop:
+
+```bash
+pae connect
+```
+
+Pick your assistant with the arrow keys. It prints the exact commands, with your address and a token already filled in.
+
+### 3. Run what it printed. Then ask.
+
+Run those commands **on your own computer**. That installs the `engine` plugin from this repo and connects the assistant to your server.
+
+Then say it the way you would say it to a person:
+
+```text
+Deploy my application https://github.com/anna/invoicer on this PanelAlpha Engine.
+```
+
+What this does: the assistant creates a **project** (one website on this server), builds the app, and gives it an address with HTTPS.
+
+What you should see: a web address. Open the address it gives you. Every project gets a free `panelalpha.online` name until you add your own domain.
+
+A token with default permissions can delete a whole project. You can hand out a read-only one instead, or take single tools away. That lives on the engine, not in this plugin.
+
+---
+
+## Things you can just ask for
+
+These are not magic phrases. They show the level of detail worth giving:
+
+| You say | What happens |
+|:---|:---|
+| `Deploy github.com/org/app on this engine.` | The create skill inspects the repo, creates a project, deploys it, and checks that the site answers. |
+| `This site does not open. Read the deploy log and fix what you can.` | The debug skill reads the failure, looks at what the site actually serves, changes what is fixable, and tries again. |
+| `Install WordPress here, admin user anna.` | WordPress installed and ready. |
+| `Create a MySQL database for this project and a user for it.` | Database, user and privileges, without you touching SQL. |
+| `List the projects on this engine.` | A read-only check that the connection works. An empty list on a new engine is a success. |
+
+The skills are `/engine:create-project` and `/engine:debug-project`. On Pi, Hermes and OpenClaw they are `/create-project` and `/debug-project`. The assistant also uses them on its own.
+
+---
+
+## Your assistant
+
+<div align="center">
+
+<img src="https://github.com/claude.png" width="46" alt="Claude Code">&nbsp;&nbsp;
+<img src="https://github.com/cursor.png" width="46" alt="Cursor">&nbsp;&nbsp;
+<img src="https://github.com/openai.png" width="46" alt="Codex">&nbsp;&nbsp;
+<img src="https://github.com/google-gemini.png" width="46" alt="Gemini CLI">&nbsp;&nbsp;
+<img src="https://github.com/xai-org.png" width="46" alt="Grok">&nbsp;&nbsp;
+<img src="https://opencode.ai/apple-touch-icon-v3.png" width="46" alt="OpenCode">&nbsp;&nbsp;
+<img src="https://pi.dev/logo-auto.svg" width="46" alt="Pi">&nbsp;&nbsp;
+<img src="https://github.com/openclaw.png" width="46" alt="OpenClaw">
+
+<sub><b>Claude Code&nbsp; · &nbsp;Cursor&nbsp; · &nbsp;Codex&nbsp; · &nbsp;Gemini CLI&nbsp; · &nbsp;Grok&nbsp; · &nbsp;OpenCode&nbsp; · &nbsp;Windsurf&nbsp; · &nbsp;Pi&nbsp; · &nbsp;Hermes&nbsp; · &nbsp;OpenClaw</b></sub>
+
+</div>
+
+Copy the lines `pae connect` printed. The blocks below use `203.0.113.10` as a stand-in address. That is not your server.
+
+Most assistants install the skills from this repo, then connect to the engine separately. Claude Code is the exception: one install does both.
+
+<details>
+<summary><b>Claude Code</b></summary>
 
 ```bash
 claude plugin marketplace add panelalpha/agent-skills
 claude plugin install engine@panelalpha \
-  --config "server_url=https://<engine-host>:2011/mcp" \
+  --config "server_url=https://203.0.113.10:2011/mcp" \
   --config "api_token=<token>"
 ```
 
-- Without `--config`, Claude Code asks for both values when the plugin is enabled.
-- The token is stored as a secret (keychain, or `~/.claude/.credentials.json` on Linux), never in
-  `settings.json`.
-- To change either value, open `/plugin`, go to **Installed** and pick **engine**. `/mcp` shows the
-  connection.
-- The skills are `/engine:create-project` and `/engine:debug-project`. Claude also uses them on its own.
-- On an engine with a self-signed certificate, start Claude Code with
-  `NODE_EXTRA_CA_CERTS=/path/to/server.cert` (a copy of the engine's `crt/server.cert`), or it will not
-  connect.
-- To update: `claude plugin marketplace update panelalpha`, then `claude plugin update engine@panelalpha`.
+Without `--config`, Claude Code asks for both values when the plugin is enabled. The token is stored as a secret, never in `settings.json`.
 
-### Cursor
+On an engine with a self-signed certificate, start Claude Code with `NODE_EXTRA_CA_CERTS` pointing at a copy of `crt/server.cert`.
 
-Cursor plugin install has no `--config`. The plugin brings the skills. MCP is the JSON block
-`pae connect cursor` prints — paste it in **Settings → Tools & MCP → New MCP Server**, or into
-`~/.cursor/mcp.json` (all projects). It looks like this:
+</details>
 
-```json
-{
-  "mcpServers": {
-    "panelalpha-engine": {
-      "url": "https://<engine-host>:2011/mcp",
-      "headers": {
-        "Authorization": "Bearer <token>"
-      }
-    }
-  }
-}
-```
+<details>
+<summary><b>Cursor</b></summary>
 
-If the file already has other servers, add `panelalpha-engine` alongside them. Putting the file
-inside a project risks committing the token.
+Paste the prompt from `pae connect cursor` into a Cursor **Agent** chat (not Ask). That installs the plugin and writes the connection to `~/.cursor/mcp.json`.
 
-For the create/debug skills, Customize → Plugins → import `https://github.com/panelalpha/agent-skills`
-and install `engine`. Reload the window. Tools & MCP should list `panelalpha-engine`.
+If you add the connection yourself, open **Settings → Tools & MCP → New MCP Server** and paste the block the server printed. Then **Customize → Plugins**, import `https://github.com/panelalpha/agent-skills`, and install `engine`. Use `~/.cursor/mcp.json` (all projects), not a file inside a project, or you risk committing the token.
 
-On a self-signed engine, Cursor launched from a desktop icon will not see `NODE_EXTRA_CA_CERTS`
-from your shell. Start it from a terminal where that is set, or give the engine a real certificate.
+</details>
 
-### Grok
-
-Grok plugin install has no `--config`. The plugin brings the skills; `--trust` is required or they
-stay blocked:
-
-```bash
-grok plugin marketplace add panelalpha/agent-skills
-grok plugin install engine --trust
-```
-
-MCP is registered separately; `pae connect grok` prints this with the values filled in:
-
-```bash
-grok mcp add --transport http panelalpha-engine https://<engine-host>:2011/mcp \
-  --header "Authorization: Bearer <token>"
-```
-
-`--transport http` is required. Check with `grok mcp list` / `grok mcp doctor`; the server name is
-`panelalpha-engine`. Skills are `/engine:create-project` and `/engine:debug-project`.
-
-To start over: `grok plugin uninstall engine --confirm` and `grok mcp remove panelalpha-engine`.
-To update: `grok plugin marketplace update panelalpha`, then `grok plugin update engine`.
-
-### Gemini
-
-Gemini CLI extensions have no marketplace and no subfolder install — `gemini extensions install <url>`
-expects `gemini-extension.json` at the root of the given source, and this repo hosts one plugin per
-product folder. Clone the repo and point at `engine/` directly:
-
-```bash
-git clone https://github.com/panelalpha/agent-skills
-gemini extensions install ./agent-skills/engine
-```
-
-Gemini also cannot take a per-user URL or token on install, and its MCP `headers` do not expand
-environment variables (only the stdio `env` block does), so `mcpServers` in `gemini-extension.json`
-stays empty. Register the server separately; `pae connect gemini` prints this with the values
-filled in:
-
-```bash
-gemini mcp add --transport http --header "Authorization: Bearer <token>" panelalpha-engine https://<engine-host>:2011/mcp
-```
-
-Gemini CLI expects every option before the name and address. Default scope is the current project;
-add `--scope user` with the other flags (still before the name) to keep the server for every project.
-Check with `gemini mcp list`; the server name is `panelalpha-engine`. Skills are `/engine:create-project`
-and `/engine:debug-project` (`gemini skills list` to confirm they loaded).
-
-To update: `gemini extensions update engine`.
-
-### Codex
-
-Codex plugin install has no `--config`. The plugin brings the skills:
+<details>
+<summary><b>Codex</b></summary>
 
 ```bash
 codex plugin marketplace add panelalpha/agent-skills
 codex plugin add engine@panelalpha
+PANELALPHA_MCP_TOKEN='<token>' codex mcp add panelalpha-engine \
+  --url https://203.0.113.10:2011/mcp \
+  --bearer-token-env-var PANELALPHA_MCP_TOKEN
 ```
 
-MCP is registered separately; `pae connect codex` prints this with the values filled in:
+The token goes in front so Codex stores the *name* of the variable. Put `export PANELALPHA_MCP_TOKEN='<token>'` in your shell profile too.
+
+</details>
+
+<details>
+<summary><b>Gemini CLI</b></summary>
+
+Gemini has no marketplace. Clone this repo and point at `engine/`:
 
 ```bash
-PANELALPHA_MCP_TOKEN='<token>' codex mcp add panelalpha-engine --url https://<engine-host>:2011/mcp --bearer-token-env-var PANELALPHA_MCP_TOKEN
+git clone https://github.com/panelalpha/agent-skills
+gemini extensions install ./agent-skills/engine
+gemini mcp add --transport http --header "Authorization: Bearer <token>" \
+  panelalpha-engine https://203.0.113.10:2011/mcp
 ```
 
-The token goes in front so Codex stores the *name* of the variable, not the token itself. Put
-`export PANELALPHA_MCP_TOKEN='<token>'` in your shell profile too, or the token will not survive a
-new shell. Check with `codex mcp list`; the server name is `panelalpha-engine`. Skills are
-`/engine:create-project` and `/engine:debug-project`.
+Every option goes before the name and address. Add `--scope user` with the other flags to keep the server for every project.
 
-### Windsurf
+</details>
 
-Windsurf (Devin Desktop) has no marketplace in this repo. The plugin lives in
-`engine/` as `.devin-plugin/plugin.json`. Install that folder so Devin does not
-fall back to the Claude plugin and its `${user_config.*}` MCP block:
+<details>
+<summary><b>Grok</b></summary>
+
+```bash
+grok plugin marketplace add panelalpha/agent-skills
+grok plugin install engine --trust
+grok mcp add --transport http panelalpha-engine https://203.0.113.10:2011/mcp \
+  --header "Authorization: Bearer <token>"
+```
+
+`--trust` is required or the skills stay blocked. `--transport http` is required.
+
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
 
 ```bash
 devin plugins install panelalpha/agent-skills#engine
+devin mcp add -s user -H "Authorization: Bearer <token>" \
+  panelalpha-engine https://203.0.113.10:2011/mcp
 ```
 
 A local checkout works too: `devin plugins install ./agent-skills/engine`.
-`--local` keeps it on this machine only.
 
-The plugin brings the skills. MCP is registered separately; `pae connect windsurf`
-prints this with the values filled in:
-
-```bash
-devin mcp add -s user -H "Authorization: Bearer <token>" panelalpha-engine https://<engine-host>:2011/mcp
-```
-
-`-s user` stores the engine for every project. Check with `devin mcp list`; the
-server name is `panelalpha-engine`. Skills are `/engine:create-project` and
-`/engine:debug-project`.
-
-On Cascade (the older Windsurf agent, no `devin` command), paste the MCP JSON
-from the operator page into `~/.codeium/windsurf/mcp_config.json` (`serverUrl`,
-not `url`), then load the skills by hand:
+On Cascade (the older Windsurf agent, no `devin` command), paste the MCP JSON from `pae connect` into `~/.codeium/windsurf/mcp_config.json`. That file uses `serverUrl`, not `url`. Then load the skills by hand:
 
 ```bash
 mkdir -p ~/.codeium/windsurf/skills
@@ -205,138 +203,122 @@ ln -s /path/to/agent-skills/engine/skills/create-project ~/.codeium/windsurf/ski
 ln -s /path/to/agent-skills/engine/skills/debug-project ~/.codeium/windsurf/skills/debug-project
 ```
 
-On a self-signed engine, start Windsurf from a terminal where `NODE_EXTRA_CA_CERTS`
-points at a copy of `crt/server.cert`.
+</details>
 
-### Pi
-
-Pi has no marketplace in this repo. `engine/package.json` declares `pi.skills`.
-Clone and install that folder:
+<details>
+<summary><b>Pi</b></summary>
 
 ```bash
 git clone https://github.com/panelalpha/agent-skills
 pi install ./agent-skills/engine
-```
-
-Install the MCP adapter once if `/mcp` is not already a command, then restart Pi:
-
-```bash
 pi install npm:pi-mcp-adapter
 ```
 
-The package brings the skills. MCP is the JSON block `pae connect pi` prints —
-paste it into `~/.config/mcp/mcp.json` (all projects) or `.mcp.json` (this project).
-It looks like this:
+Restart Pi after the adapter. Then paste the JSON from `pae connect pi` into `~/.config/mcp/mcp.json`. On a self-signed engine, add `"caFile": "~/panelalpha-engine.cert"` to that server entry.
 
-```json
-{
-  "mcpServers": {
-    "panelalpha-engine": {
-      "url": "https://<engine-host>:2011/mcp",
-      "headers": {
-        "Authorization": "Bearer <token>"
-      }
-    }
-  }
-}
-```
+</details>
 
-If the file already has other servers, add `panelalpha-engine` alongside them.
-Putting the file inside a project risks committing the token. Check with `/mcp`
-in Pi. Skills are `/create-project` and `/debug-project`.
-
-On a self-signed engine, add `"caFile": "~/panelalpha-engine.cert"` to that server
-entry (a copy of the engine's `crt/server.cert`).
-
-### Hermes
-
-Hermes has no marketplace in this repo. Agent Plugins packages live at the plugin
-folder root, so clone the repo and point at `engine/`:
+<details>
+<summary><b>Hermes</b></summary>
 
 ```bash
 git clone https://github.com/panelalpha/agent-skills
 hermes plugins install ./agent-skills/engine --enable
+hermes mcp add panelalpha-engine --url https://203.0.113.10:2011/mcp --auth header
 ```
 
-Portable packages stay disabled until `--enable`. The plugin brings the skills.
-MCP is registered separately; `pae connect hermes` prints YAML for
-`~/.hermes/config.yaml`. Hermes has no `--config` on plugin install and Agent
-Plugins `mcp.json` must not contain credentials. The CLI equivalent is:
+`--enable` is required or the plugin stays disabled. `--auth header` is required. It asks whether the server needs authentication (yes) and whether to enable every tool (yes). `pae connect hermes` also prints YAML for `~/.hermes/config.yaml`. To skip typing the token, put `MCP_PANELALPHA_ENGINE_API_KEY` in `~/.hermes/.env`.
 
-```bash
-hermes mcp add panelalpha-engine --url https://<engine-host>:2011/mcp --auth header
-```
+</details>
 
-It asks whether the server needs authentication (yes) and whether to enable every
-tool. Put the token in `~/.hermes/.env` as `MCP_PANELALPHA_ENGINE_API_KEY` if you
-want to skip typing it. Check with `hermes mcp test panelalpha-engine`; the server
-name is `panelalpha-engine`. Skills are `/create-project` and `/debug-project`
-(`hermes skills` to confirm they loaded).
-
-The MCP URL must match the certificate on the engine. A Let's Encrypt certificate
-for the bare IP will fail TLS if you use a hostname that is not on that certificate.
-
-### OpenClaw
-
-OpenClaw has no marketplace in this repo. The native manifest is
-`openclaw.plugin.json` in `engine/`. Clone and install that folder so OpenClaw
-does not pick a Claude or Codex bundle instead:
+<details>
+<summary><b>OpenClaw</b></summary>
 
 ```bash
 git clone https://github.com/panelalpha/agent-skills
 openclaw plugins install ./agent-skills/engine
-```
-
-The plugin brings the skills. MCP is registered separately; `pae connect openclaw`
-prints this. The manifest leaves `mcpServers` empty so it does not ship a token:
-
-```bash
 openclaw mcp add panelalpha-engine \
-  --url https://<engine-host>:2011/mcp \
+  --url https://203.0.113.10:2011/mcp \
   --transport streamable-http \
   --header "Authorization: Bearer <token>"
 ```
 
-`--transport streamable-http` is required. Check with `openclaw mcp doctor panelalpha-engine --probe`;
-the server name is `panelalpha-engine`. Skills are `/create-project` and `/debug-project`.
+`--transport streamable-http` is required.
 
-### OpenCode
+</details>
 
-The npm package `opencode-panelalpha-engine` is not published yet. Point `opencode.json` at a checkout:
+<details>
+<summary><b>OpenCode</b></summary>
+
+The npm package is not published yet. Point `opencode.json` at a checkout of this repo:
 
 ```json
 {
   "plugin": [
     ["file:///path/to/agent-skills/engine/opencode.js",
-     { "url": "https://<engine-host>:2011/mcp", "token": "{env:PANELALPHA_MCP_TOKEN}" }]
+     { "url": "https://203.0.113.10:2011/mcp", "token": "{env:PANELALPHA_MCP_TOKEN}" }]
   ]
 }
 ```
 
-`PANELALPHA_MCP_URL` and `PANELALPHA_MCP_TOKEN` in the environment work instead of the options. The
-plugin registers the `panelalpha-engine` MCP server and the skills; a `panelalpha-engine` server
-already in `opencode.json` wins over it. Check with `opencode mcp list` and `opencode debug skill`.
-The same `package.json` is the Pi skills package (`pi` key + `pi-package` keyword).
+`PANELALPHA_MCP_URL` and `PANELALPHA_MCP_TOKEN` in the environment work instead of the options.
 
-## Adding a plugin for another product
+</details>
 
-Put it next to `engine/`, for example `panel/`, and keep it separate from `engine/` everywhere:
+Using something else? Any assistant that speaks MCP can still talk to the engine. The skills in this repo are extra: they teach the order of work. Without them you connect MCP by hand and the assistant has the tools, but not the how-to.
 
-- Its own plugin name, used as the folder name and in every marketplace file.
-- Its own MCP server name, such as `panelalpha-panel`.
-- Its own `userConfig` (Claude). Cursor, Codex, Gemini, Grok, Windsurf, Pi, Hermes and
-  OpenClaw leave `mcpServers` empty and take URL and token from `pae connect` or
-  that client's `mcp add`.
-- Skill descriptions that name the product, so an agent does not pick an engine skill for a panel task.
+---
 
-Then add an entry for it to every marketplace file (Claude, Codex, Cursor, Grok), and give it its own
-`gemini-extension.json`, `.devin-plugin/plugin.json`, `pi` key on `package.json`, Agent Plugins
-`plugin.json` / `mcp.json`, and `openclaw.plugin.json` — those clients have no marketplace file,
-so each product's plugin folder needs them.
+## FAQ
 
-## Notes
+<details>
+<summary><b>Do I need this if I already connected MCP?</b></summary>
 
-- The engine decides what a token may do: `MCP_PERMISSION_MODE`, `MCP_TOOLSETS` and `MCP_DENIED_TOOLS`
-  in `.env-core` set which tools a client sees.
-- A plugin's URL and token are set once per machine, so one install talks to one engine. For more
-  engines, add them as plain MCP servers per project (`claude mcp add --scope local …`).
+The connection gives the assistant tools. The skills tell it how to use them: inspect the repo first, wait out a deploy instead of creating a second project, read the failure code before guessing. You can run the engine with MCP alone. The plugin is the how-to on top.
+</details>
+
+<details>
+<summary><b>Which assistants work?</b></summary>
+
+Claude Code, Cursor, Codex, Gemini CLI, Grok, OpenCode, Windsurf, Pi, Hermes and OpenClaw have a plugin here. Anything that speaks MCP can connect to the engine even if it is not on that list. Run `pae connect` on the server and pick yours.
+</details>
+
+<details>
+<summary><b>Where does the token live?</b></summary>
+
+On your computer, in that assistant's own config. Claude Code stores it as a secret. Codex stores the name of an environment variable. Cursor, Pi and similar write it into an MCP config file. Never put that file inside a project you commit. The engine decides what the token may do: `MCP_PERMISSION_MODE`, `MCP_TOOLSETS` and `MCP_DENIED_TOOLS` in `.env-core`.
+</details>
+
+<details>
+<summary><b>Can I limit what my assistant is allowed to do?</b></summary>
+
+Yes, and it is worth doing before you paste a token. You can give it a read-only token, allow changes but not deletions, or deny individual tools such as `project_delete`. That lives on the engine, not in this plugin.
+</details>
+
+<details>
+<summary><b>The assistant connected, then failed with a certificate error.</b></summary>
+
+The engine is using a self-signed certificate that your computer does not trust. Give the engine a real certificate, or copy `crt/server.cert` from the server and point `NODE_EXTRA_CA_CERTS` at it (Claude Code, Cursor, and other Node-based tools). Start the assistant from that terminal. A desktop icon will not see a variable you set in a different shell.
+</details>
+
+<details>
+<summary><b>One install, several engines?</b></summary>
+
+A plugin's URL and token are set once per machine, so one install talks to one engine. For more engines, add them as plain MCP servers per project.
+</details>
+
+---
+
+## Talk to us on Discord
+
+Discord is the **main place** to reach us. Ask a question, show what you deployed, or follow what we are working on.
+
+**[Join the PanelAlpha Discord](https://discord.gg/9twHWR7xGX)**
+
+Not on Discord? The [community forum](https://community.panelalpha.com/) is open too.
+
+---
+
+## License
+
+These plugins are open source under the MIT license.
