@@ -1,7 +1,7 @@
 {
   "name": "engine",
   "version": "0.1.0",
-  "description": "PanelAlpha Engine, the hosting engine: skills for creating and deploying a project and for debugging one that fails. Register the MCP server with `devin mcp add` or `pae mcp:connect windsurf`; this package does not ship credentials.",
+  "description": "PanelAlpha Engine, the hosting engine: skills for creating and deploying a project and for debugging one that fails. Register the MCP server with `devin mcp add` or `pae connect windsurf`; this package does not ship credentials.",
   "author": {
     "name": "PanelAlpha",
     "url": "https://panelalpha.com"

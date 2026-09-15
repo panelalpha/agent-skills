@@ -14,21 +14,20 @@ Windsurf (Devin Desktop), Pi, Hermes and OpenClaw:
 |---|---|
 | `.claude-plugin/plugin.json`, `.mcp.json` | Claude Code (`${user_config.*}`) |
 | `.codex-plugin/plugin.json` | Codex (`mcpServers: {}` — MCP is registered with `codex mcp add`) |
-| `.cursor-plugin/plugin.json` | Cursor (pins `mcp-none.json`; MCP is the JSON from `pae mcp:connect cursor`) |
+| `.cursor-plugin/plugin.json` | Cursor (pins `mcp-none.json`; MCP is the JSON from `pae connect cursor`) |
 | `gemini-extension.json` | Gemini (`mcpServers: {}` — MCP is registered with `gemini mcp add`) |
 | `.grok-plugin/plugin.json` | Grok (pins `mcp-none.json` so it does not load Claude's `.mcp.json`; MCP is `grok mcp add`) |
 | `package.json`, `opencode.js` | OpenCode |
-| `.devin-plugin/plugin.json` | Windsurf / Devin Desktop (pins `mcp-none.json`; MCP is `pae mcp:connect windsurf`) |
-| `package.json` `pi` key | Pi (`pi install` loads `./skills`; MCP is `pae mcp:connect pi`) |
+| `.devin-plugin/plugin.json` | Windsurf / Devin Desktop (pins `mcp-none.json`; MCP is `pae connect windsurf`) |
+| `package.json` `pi` key | Pi (`pi install` loads `./skills`; MCP is `pae connect pi`) |
 | `plugin.json`, `mcp.json` | Hermes (Agent Plugins v1; `mcpServers` is empty — MCP is `hermes mcp add`) |
 | `openclaw.plugin.json` | OpenClaw (skills pack; `mcpServers` is empty — MCP is `openclaw mcp add`) |
 | `skills/` | all of them |
 
 Codex, Cursor, Gemini, Grok, Windsurf, Pi, Hermes and OpenClaw cannot take a per-user
 URL or token on plugin install, so those manifests leave `mcpServers` empty. The
-engine's `pae mcp:connect` command writes the connection into each client's own
-config for the agents it lists. Hermes and OpenClaw use the `mcp add` lines in
-their sections below until they are on that list.
+engine's `pae connect` command writes the connection into each client's own
+config, including `hermes` and `openclaw`.
 
 The marketplace files at the top are `.claude-plugin/marketplace.json` for Claude Code,
 `.agents/plugins/marketplace.json` for Codex, `.cursor-plugin/marketplace.json` for Cursor
@@ -50,8 +49,8 @@ The engine installer's last line is the Claude Code command with a token already
 or a new token, run this on the engine host:
 
 ```bash
-pae mcp:connect          # lists the supported agents
-pae mcp:connect:claude   # a fresh token plus the exact command for that agent
+pae connect          # lists the supported agents
+pae connect claude   # a fresh token plus the exact command for that agent
 ```
 
 ### Claude Code
@@ -77,7 +76,7 @@ claude plugin install engine@panelalpha \
 ### Cursor
 
 Cursor plugin install has no `--config`. The plugin brings the skills. MCP is the JSON block
-`pae mcp:connect cursor` prints — paste it in **Settings → Tools & MCP → New MCP Server**, or into
+`pae connect cursor` prints — paste it in **Settings → Tools & MCP → New MCP Server**, or into
 `~/.cursor/mcp.json` (all projects). It looks like this:
 
 ```json
@@ -112,7 +111,7 @@ grok plugin marketplace add panelalpha/agent-skills
 grok plugin install engine --trust
 ```
 
-MCP is registered separately; `pae mcp:connect grok` prints this with the values filled in:
+MCP is registered separately; `pae connect grok` prints this with the values filled in:
 
 ```bash
 grok mcp add --transport http panelalpha-engine https://<engine-host>:2011/mcp \
@@ -138,7 +137,7 @@ gemini extensions install ./agent-skills/engine
 
 Gemini also cannot take a per-user URL or token on install, and its MCP `headers` do not expand
 environment variables (only the stdio `env` block does), so `mcpServers` in `gemini-extension.json`
-stays empty. Register the server separately; `pae mcp:connect gemini` prints this with the values
+stays empty. Register the server separately; `pae connect gemini` prints this with the values
 filled in:
 
 ```bash
@@ -161,7 +160,7 @@ codex plugin marketplace add panelalpha/agent-skills
 codex plugin add engine@panelalpha
 ```
 
-MCP is registered separately; `pae mcp:connect codex` prints this with the values filled in:
+MCP is registered separately; `pae connect codex` prints this with the values filled in:
 
 ```bash
 PANELALPHA_MCP_TOKEN='<token>' codex mcp add panelalpha-engine --url https://<engine-host>:2011/mcp --bearer-token-env-var PANELALPHA_MCP_TOKEN
@@ -185,7 +184,7 @@ devin plugins install panelalpha/agent-skills#engine
 A local checkout works too: `devin plugins install ./agent-skills/engine`.
 `--local` keeps it on this machine only.
 
-The plugin brings the skills. MCP is registered separately; `pae mcp:connect windsurf`
+The plugin brings the skills. MCP is registered separately; `pae connect windsurf`
 prints this with the values filled in:
 
 ```bash
@@ -225,7 +224,7 @@ Install the MCP adapter once if `/mcp` is not already a command, then restart Pi
 pi install npm:pi-mcp-adapter
 ```
 
-The package brings the skills. MCP is the JSON block `pae mcp:connect pi` prints —
+The package brings the skills. MCP is the JSON block `pae connect pi` prints —
 paste it into `~/.config/mcp/mcp.json` (all projects) or `.mcp.json` (this project).
 It looks like this:
 
@@ -260,8 +259,9 @@ hermes plugins install ./agent-skills/engine --enable
 ```
 
 Portable packages stay disabled until `--enable`. The plugin brings the skills.
-MCP is registered separately; Hermes has no `--config` on plugin install and
-Agent Plugins `mcp.json` must not contain credentials:
+MCP is registered separately; `pae connect hermes` prints YAML for
+`~/.hermes/config.yaml`. Hermes has no `--config` on plugin install and Agent
+Plugins `mcp.json` must not contain credentials. The CLI equivalent is:
 
 ```bash
 hermes mcp add panelalpha-engine --url https://<engine-host>:2011/mcp --auth header
@@ -287,8 +287,8 @@ git clone https://github.com/panelalpha/agent-skills
 openclaw plugins install ./agent-skills/engine
 ```
 
-The plugin brings the skills. MCP is registered separately; the manifest leaves
-`mcpServers` empty so it does not ship a token:
+The plugin brings the skills. MCP is registered separately; `pae connect openclaw`
+prints this. The manifest leaves `mcpServers` empty so it does not ship a token:
 
 ```bash
 openclaw mcp add panelalpha-engine \
@@ -325,7 +325,7 @@ Put it next to `engine/`, for example `panel/`, and keep it separate from `engin
 - Its own plugin name, used as the folder name and in every marketplace file.
 - Its own MCP server name, such as `panelalpha-panel`.
 - Its own `userConfig` (Claude). Cursor, Codex, Gemini, Grok, Windsurf, Pi, Hermes and
-  OpenClaw leave `mcpServers` empty and take URL and token from `pae mcp:connect` or
+  OpenClaw leave `mcpServers` empty and take URL and token from `pae connect` or
   that client's `mcp add`.
 - Skill descriptions that name the product, so an agent does not pick an engine skill for a panel task.
 
