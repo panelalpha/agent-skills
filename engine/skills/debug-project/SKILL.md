@@ -17,7 +17,7 @@ Not connected? Run `pae connect` on the engine host - it prints the setup for ea
 
 Still `queued` or `running`? Wait and poll every 20-30 s; it is not a failure, and a client timeout on the deploy call is not one either - never start a second deploy. Stuck (a stage not advancing for many minutes, no new log lines): `deploy_cancel`, or `task_cancel` for a `project_create` task.
 
-`partial` is not a failed deploy: the app answers, and `details.deployment_warnings` says what is wrong on the way to it (the domain, the proxy, the port). Fix from those lines.
+`partial` is not a failed deploy: the app answers, and `details.deployment_warnings` says what is wrong on the way to it (the domain, the proxy, the port). Fix from those lines. After a rebuild or archive deploy, `project_get` can drop those warnings and say `success` - the `deploy_log_get` `status` / `error` still carries them.
 
 ## 2. Read the failure code
 
@@ -30,7 +30,7 @@ A failed deploy returns `problems[].code`. Show the user the `message` and fix b
 | `composer-unresolvable`, `dependency-*`, `missing-build-script` | fix the package files with `file_write`, then `project_rebuild` |
 | `disk-full`, `out-of-memory` | step 6 first, then raise `disk_space_limit` / `memory_limit` with `project_update` and rebuild |
 | `registry-rate-limited`, `base-image-unavailable` | wait, then `project_rebuild` |
-| `env-validation-failed`, `database-auth-failed` | correct `env_vars` or the MySQL password (secrets as vault refs), then rebuild |
+| `env-validation-failed`, `database-auth-failed` | correct `env_vars`, or reset the MySQL password (`mysql_user_change_password`, a generated one - not a vault ref) and send the same value in `env_vars`, then rebuild |
 | `repo-auth-failed`, `repo-not-found` | check the URL; a private repo needs `git_token` as a `vault:<ref>` (see **create-project**) |
 | `app_did_not_start` | go to step 3 |
 | `deploy_cancelled` | somebody called `deploy_cancel` - nothing to fix |
@@ -82,13 +82,14 @@ Before raising a limit, look: `project_usage` for the project's disk and memory,
 - **Welcome page** - files not in `/project` (`file_exists`), or the archive was never deployed
 - **Directory listing or raw PHP** - wrong detection: write `/project/.panelalpha/panelalpha.yaml` with `platform:` (and `docroot: public` for Laravel-style apps)
 - **Part of the app unreachable** - step 4, `ports.unrouted`
+- **A container exits at once with `Fatal glibc error: CPU does not support x86-64-v2`** - the host's CPU model is too old for that image (e.g. `mysql:8.0`). Not fixable from the project: tell the operator
 - **Empty data** - migrations ran but seeds did not; ask the user before seeding
 - **Certificate `self_signed`** - normal for an engine-signed domain, not a deploy fault. On a `*.panelalpha.online` name (`details.domain.tls_terminated_at: proxy`) visitors get the proxy's trusted certificate whatever `details.ssl` says
 - **"Deployed as X, files say Y"** - `project_inspect`, read `drift`
 
 ## 8. Fix and redeploy
 
-A fix that edits a working site's files, env vars or database: take a backup first (**backup-project** skill), when the data matters.
+A fix that edits a working site's files, env vars or database: take a backup first when the data matters: `backup_create` (`container` from `backup_container_list`), and wait for `backup_get` to report it complete.
 
 - `project_rebuild` - `env_vars`, `stages`, `zip_path`
 - `container_project_action` - `restart` a hung app

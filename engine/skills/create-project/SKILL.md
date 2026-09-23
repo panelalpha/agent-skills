@@ -62,11 +62,13 @@ A `422` lists **every** problem at once in `problems[]`. Fix all of them, then r
 Call `project_create` without `git_repo`. The task ends `completed` with `details.waiting_for_files: true`: the account is ready and empty. Then, always under `/project/`:
 - Archive URL: `file_upload` (`path: "/project"`, `file_url`) → `project_deploy_archive` (`zip_path: "/project/<file>.zip"`)
 - A few files: `file_write` (`path: "/project/index.html"`, `contents`) → `project_rebuild`
-- WordPress: upload the release zip from GitHub (wordpress.org returns 403), deploy it, then `wp_cli_run` `core config` / `core install` with `--path=/home/<name>/project` and `--url=<the project's domain>`
 
 ## 5. Database (if the app needs one)
 
-`mysql_database_create` → `mysql_user_create` → `mysql_privileges_set`, then the credentials in `env_vars` on `project_rebuild`, password as a vault ref. Details: the **manage-database** skill.
+`mysql_database_create` → `mysql_user_create` → `mysql_privileges_set` (`privileges: "ALL PRIVILEGES"`), then the credentials in `env_vars` on `project_rebuild`.
+- names get the project prefix: `wp` becomes `shop_wp`
+- host and port: `mysql_server_info`
+- the password: generate a long random one and never show it. **Not a vault ref** - `mysql_user_create` stores `vault:...` as the literal password; refs are resolved only in `git_token`, `env_vars` values and `project_setting_set` `value`.
 
 ## 6. Follow the deploy
 
@@ -88,13 +90,14 @@ Failed → use the **debug-project** skill.
 ## 7. Verify
 
 - `project_get` - `deployment_status: success`, `health_healthy: true`. `partial` means the app answers but the engine found something wrong on the way to it: report every line of `details.deployment_warnings`.
+  After `project_rebuild` / `project_deploy_archive`, also read `deploy_log_get` `offset: 100000`: its `status` can be `partial` with the reasons in `error` (e.g. the domain resolves to a private address) while `project_get` says `success`. The log is the one to report.
 - `app_health_check` - `serving: ok`; `domain.verdict: ok` (the domain reaches this app, not another one); `ports` - every published port and whether it answered
 - fetch `https://<domain>/` - the app itself, not a placeholder page
 - `project_inspect` - `ports.unrouted`: ports the app publishes that no domain reaches. `routable: true` (an admin UI, a websocket server) needs a `proxy_rule_create` to be reachable - tell the user and ask before exposing it. `routable: false` and `ports.refused` are datastores: never route them.
 
 Report:
 - the URL and the detected stack
-- where the domain came from (`details.domain.source`), and `details.domain.fallback_reason` if set - a better name was not available
+- where the domain came from (`details.domain.source`), and `details.domain.fallback_reason` if set - a better name was not available. `details.domain.publicly_resolvable: false` means the site answers on the local network only: say so plainly
 - the certificate a visitor sees: when `details.domain.tls_terminated_at` is `proxy`, it is the proxy's trusted one and `details.ssl` does not apply; on `engine` it is `details.ssl.status`, and only `trusted` may be called trusted
 - any unrouted port with `routable: true`
 
