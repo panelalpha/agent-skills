@@ -11,13 +11,17 @@ Not connected? Run `pae connect` on the engine host - it prints the setup for ea
 
 ## 1. Check status
 
-- `project_get` - `deployment_status`, `health_healthy`, `deploy_port`, `app_port`
+- `project_get` - under `details`: `deployment_status`, `deployment_warnings`, `health_healthy`, `health_failed_checks`, `deploy_port`, `app_port`. While a deploy runs the status keys are absent.
 - Deployed by `project_create`: `task_get` with the task `id` - `status`, `details.error`; `task_log_list` with `after_id` for the log lines
-- Deployed by `project_rebuild` / `project_deploy_archive`: `deploy_log_get` with `offset: 100000` - `status`, `stage`, `error`
+- Deployed by `project_rebuild` / `project_deploy_archive`: `deploy_log_get` with `offset: 100000` - `status`, `error`, and `timings.timeline`, which already holds every milestone and the app's first output lines
 
-Still `queued` or `running`? Wait and poll every 20-30 s; it is not a failure, and a client timeout on the deploy call is not one either - never start a second deploy. Stuck (a stage not advancing for many minutes, no new log lines): `deploy_cancel`, or `task_cancel` for a `project_create` task.
+Judge by `status`, never by `stage`: `stage` stays `running` after the deploy has ended. Still `queued` or `running`? Wait and poll every 20-30 s; it is not a failure, and a client timeout on the deploy call is not one either - never start a second deploy. Stuck (a stage not advancing for many minutes, no new log lines): `deploy_cancel`, or `task_cancel` for a `project_create` task.
 
-`partial` is not a failed deploy: the app answers, and `details.deployment_warnings` says what is wrong on the way to it (the domain, the proxy, the port). Fix from those lines. After a rebuild or archive deploy, `project_get` can drop those warnings and say `success` - the `deploy_log_get` `status` / `error` still carries them.
+`partial` means the container started and something is wrong - possibly that **nothing answers at all** (`health_healthy: false`). It carries no `problems[].code`; the diagnosis is in `details.deployment_warnings` and `details.health_failed_checks` (each an `id` and a message - `app-port-silent` names the port and the address the app listens on). Fix from those lines.
+
+A `partial` whose only warnings are "resolves to this host's private address" and the self-signed certificate is a working site on a host without a public IP: report it, do not try to fix it. The last log line of such a deploy is `level: error` ("Deploy finished with warnings") - it is not a failure.
+
+After a rebuild or archive deploy, `project_get` can drop the warnings and say `success` while `deploy_log_get` still says `partial` with them in `error`. Report the `deploy_log_get` status.
 
 ## 2. Read the failure code
 
@@ -27,7 +31,7 @@ A failed deploy returns `problems[].code`. Show the user the `message` and fix b
 |---|---|
 | `php-version-mismatch`, `php-extension-missing` | fix `composer.json`, or set `image:` in `/project/.panelalpha/panelalpha.yaml`; `php_version_list` says what the host has |
 | `node-engine-mismatch`, `go-toolchain-too-old` | fix `.nvmrc` / `engines.node` / `go.mod`, or set `image:` |
-| `composer-unresolvable`, `dependency-*`, `missing-build-script` | fix the package files with `file_write`, then `project_rebuild` |
+| `composer-unresolvable`, `dependency-*`, `missing-build-script` | fix the package files with `file_write` (`name`, `path` under `/project/`, `contents`), then `project_rebuild` |
 | `disk-full`, `out-of-memory` | step 6 first, then raise `disk_space_limit` / `memory_limit` with `project_update` and rebuild |
 | `registry-rate-limited`, `base-image-unavailable` | wait, then `project_rebuild` |
 | `env-validation-failed`, `database-auth-failed` | correct `env_vars`, or reset the MySQL password (`mysql_user_change_password`, a generated one - not a vault ref) and send the same value in `env_vars`, then rebuild |
@@ -42,7 +46,7 @@ A failed deploy returns `problems[].code`. Show the user the `message` and fix b
 - `container_service_logs` - `service: "app"`, `lines: 200`
 - `app_health_check` - `serving` (`ok`, or what is served instead), and `checks`: each names a stable id and, where it can, what to do
 
-A restart loop usually means the app listens on `127.0.0.1` instead of `0.0.0.0`, or on the wrong port.
+An app that listens on `127.0.0.1` instead of `0.0.0.0` shows as a container that is `running` and silent: the port check fails with "Connection reset by peer" and the log says it is listening. Fix the listen address in the code (`file_write`), then `project_rebuild`. A restart loop is usually a crash on start, or the wrong port.
 A compose app that restarts a few times with `ECONNREFUSED` against its own database and then settles is racing its database at startup, not broken: read to the end of the logs before diagnosing.
 
 ## 4. Ports and routing
@@ -74,7 +78,7 @@ Compose / Dockerfile apps run one level in: `docker compose exec -T -w <dir> <se
 
 ## 6. Resources
 
-Before raising a limit, look: `project_usage` for the project's disk and memory, `metrics_latest` for the whole server. A server that is itself out of memory or disk is not fixed by a higher project limit - tell the user.
+Before raising a limit, look: `project_usage` for the project's `storage` (MB) and `bandwidth`, `metrics_current` for the whole server (RAM in KiB, disk in bytes). A server that is itself out of memory or disk is not fixed by a higher project limit - tell the user.
 
 ## 7. Match the symptom
 
@@ -89,13 +93,13 @@ Before raising a limit, look: `project_usage` for the project's disk and memory,
 
 ## 8. Fix and redeploy
 
-A fix that edits a working site's files, env vars or database: take a backup first when the data matters: `backup_create` (`container` from `backup_container_list`), and wait for `backup_get` to report it complete.
+A fix that edits a working site's files, env vars or database: take a backup first when the project holds data - a database (`mysql_database_list`), a named volume, or uploads under `/project`: `backup_create` (`container` from `backup_container_list`), and wait for `backup_get` to report it complete.
 
 - `project_rebuild` - `env_vars`, `stages`, `zip_path`
 - `container_project_action` - `restart` a hung app
 - `project_update` - `memory_limit`, `disk_space_limit`
 
-Report the cause (the code or log line), what you changed, and the new `deployment_status`.
+Verify: `app_health_check` (`serving: ok`, `domain.verdict: ok`), then fetch the domain. Report the cause (the code, check id or log line), what you changed, and the new status from `deploy_log_get`.
 
 ## 9. The engine is at fault
 
