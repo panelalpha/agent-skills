@@ -17,7 +17,7 @@ Not connected? Run `pae connect` on the engine host - it prints the setup for ea
 - `metrics_current` - `cpu_usage_percent`, `ram_usage_percent`, `disk_usage_percent`. This is the only metrics call that reports how full the disk is, and the one to quote for CPU. Units differ: `disk_*` are bytes, `ram_*` are **KiB** (`ram_total: 8131792` is 7.8 GiB).
 - `metrics_last_hour_averages` - `avg_cpu_percent`, `avg_ram_percent`: a spike in `metrics_current` that the hour does not show is a moment, not a trend
 - `metrics_latest` - load average (`cpu_load_avg` 1m/5m/15m), `swap_percent`, disk and network I/O. Its answer is a bare object, not wrapped in `data`, and its `cpu_percent` is an instant sample - quote CPU from `metrics_current`
-- `csf_status` - `enabled`, `version`, `error`. A set `error` or a failed call means the firewall state is unknown - say so, do not guess
+- `firewall_status` - `provider` (`ufw`), `enabled`, `default_incoming`, `error`. `enabled: null`, a set `error` or a failed call means the firewall state is unknown - say so, do not guess
 - `backup_container_list` - an empty list means no project on this server can be backed up
 
 Thresholds worth reporting: disk above 85%, RAM above 90% or any sustained swap, a certificate with under 14 days. No tool reports the core count, so give the load average as numbers without judging it.
@@ -58,6 +58,6 @@ Say what you did not check (e.g. "`app_health_check` skipped for 40 healthy proj
 
 ## Rules
 
-- Read only. Never rebuild, restart, suspend, change limits, or touch CSF/ModSecurity from this skill.
+- Read only. Never rebuild, restart, suspend, change limits, or touch the firewall or ModSecurity from this skill.
 - Report numbers from the tool output, with units, never "looks fine".
-- Never show `.env` values, credentials or `csf_ui_credentials`.
+- Never show `.env` values or credentials.

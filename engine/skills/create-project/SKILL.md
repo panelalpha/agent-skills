@@ -32,7 +32,7 @@ Never ask for a token, password or API key in chat, and never put one in a URL. 
 3. `vault_secret_status` - `ref` - until `status` is `filled` (`pending`: not yet; `expired`: mint a new slot)
 4. pass the `ref` where the secret goes: `git_token`, or an `env_vars` value (`{"DB_PASSWORD": "vault:<ref>"}`)
 
-A pasted secret is final: to replace one, `vault_secret_delete` it and mint a new slot. An unknown, unfilled or expired ref fails the call with `422` naming the field - never fall back to a literal. `scope: "global"` stores the engine's own Git token, used by every project that has none, so the user pastes it once.
+A pasted secret is final: to replace one, `vault_secret_delete` it and mint a new slot. An unknown, unfilled or expired ref fails the call with `422` naming the field - never fall back to a literal. `scope: "global"` makes a ref any project may pass, so a Git token shared by several repos is pasted once - but it is used only where a call names the ref, never by default.
 
 ## 3. Create the project
 

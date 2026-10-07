@@ -29,8 +29,8 @@ A failed deploy returns `problems[].code`. Show the user the `message` and fix b
 
 | code | fix |
 |---|---|
-| `php-version-mismatch`, `php-extension-missing` | fix `composer.json`, or set `image:` in `/project/.panelalpha/panelalpha.yaml`; `php_version_list` says what the host has |
-| `node-engine-mismatch`, `go-toolchain-too-old` | fix `.nvmrc` / `engines.node` / `go.mod`, or set `image:` |
+| `php-version-mismatch`, `php-extension-missing` | fix `composer.json`, or name an image in `/project/.panelalpha/panelalpha.yaml`: `extends: <recipe>` plus `image:` (`image:` alone fails the deploy); `php_version_list` says what the host has |
+| `node-engine-mismatch`, `go-toolchain-too-old` | fix `.nvmrc` / `engines.node` / `go.mod`, or set `image:` with `extends:` the same way |
 | `composer-unresolvable`, `dependency-*`, `missing-build-script` | fix the package files with `file_write` (`name`, `path` under `/project/`, `contents`), then `project_rebuild` |
 | `disk-full`, `out-of-memory` | step 6 first, then raise `disk_space_limit` / `memory_limit` with `project_update` and rebuild |
 | `registry-rate-limited`, `base-image-unavailable` | wait, then `project_rebuild` |
@@ -84,7 +84,7 @@ Before raising a limit, look: `project_usage` for the project's `storage` (MB) a
 
 - **502/504** - `app_port` differs from `deploy_port` → `project_rebuild`; proxy logs via `domain_log_list`
 - **Welcome page** - files not in `/project` (`file_exists`), or the archive was never deployed
-- **Directory listing or raw PHP** - wrong detection: write `/project/.panelalpha/panelalpha.yaml` with `platform:` (and `docroot: public` for Laravel-style apps)
+- **Directory listing or raw PHP** - wrong detection: `project_inspect` lists `application.candidates`; pass one as `recipe` to `project_rebuild` (this deploy only), or make it stick with `/project/.panelalpha/panelalpha.yaml` holding `extends: <recipe>` (plus `docroot: public` for Laravel-style apps). There is no `platform:` key - an unknown key fails the deploy
 - **Part of the app unreachable** - step 4, `ports.unrouted`
 - **A container exits at once with `Fatal glibc error: CPU does not support x86-64-v2`** - the host's CPU model is too old for that image (e.g. `mysql:8.0`). Not fixable from the project: tell the operator
 - **Empty data** - migrations ran but seeds did not; ask the user before seeding
