@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "engine",
   "version": "0.1.0",
-  "description": "PanelAlpha Engine, the hosting engine: skills for creating and deploying a project and for debugging one that fails. Register the MCP server with the client; this package does not ship credentials.",
+  "description": "PanelAlpha Engine, the hosting engine: skills for deploying and debugging projects, domains, backups, databases, git releases and server care. Register the MCP server with the client; this package does not ship credentials.",
   "author": {
     "name": "PanelAlpha",
     "url": "https://panelalpha.com"

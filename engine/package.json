@@ -1,7 +1,7 @@
 {
   "name": "opencode-panelalpha-engine",
   "version": "0.1.0",
-  "description": "OpenCode plugin and Pi skills package for PanelAlpha Engine (create and debug projects). Does not ship MCP credentials.",
+  "description": "OpenCode plugin and Pi skills package for PanelAlpha Engine (deploy, debug and run projects). Does not ship MCP credentials.",
   "type": "module",
   "main": "opencode.js",
   "exports": "./opencode.js",

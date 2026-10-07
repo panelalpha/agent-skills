@@ -15,7 +15,7 @@ Plugins for the AI assistant you already use. They teach it how to put a site on
 </p>
 
 <p>
-<a href="#set-it-up"><img src="https://img.shields.io/badge/skills-create%20%2B%20debug-2f8f46" alt="create and debug skills"></a>
+<a href="#set-it-up"><img src="https://img.shields.io/badge/skills-13-2f8f46" alt="13 skills"></a>
 <a href="#your-assistant"><img src="https://img.shields.io/badge/assistants-10-6f42c1" alt="10 assistants"></a>
 <a href="#license"><img src="https://img.shields.io/badge/license-MIT-0b7285" alt="MIT"></a>
 <a href="https://discord.gg/9twHWR7xGX"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Join Discord"></a>
@@ -29,7 +29,7 @@ Plugins for the AI assistant you already use. They teach it how to put a site on
 
 **PanelAlpha Engine** is what you install on a VPS. **This repo** is what you install in your assistant, on your own computer.
 
-- **Two skills.** `create-project` puts a site online. `debug-project` reads the log and fixes what it can when a deploy fails or a site does not answer.
+- **Thirteen skills.** `create-project` puts a site online. `debug-project` reads the log and fixes what it can when a deploy fails or a site does not answer. The rest cover what comes after: your own domain, backups, databases, git releases, access and cron, PHP settings, blocked requests, the app's own users, traffic reports, server health and server maintenance.
 - **You ask in plain words.** The assistant talks to the engine over **MCP**, the interface it uses to call tools on your server.
 - **The engine stays in charge.** The AI never gets root. What it may do is decided on the server, before you connect it.
 
@@ -87,9 +87,29 @@ These are not magic phrases. They show the level of detail worth giving:
 | `This site does not open. Read the deploy log and fix what you can.` | The debug skill reads the failure, looks at what the site actually serves, changes what is fixable, and tries again. |
 | `Install WordPress here, admin user anna.` | WordPress installed and ready. |
 | `Create a MySQL database for this project and a user for it.` | Database, user and privileges, without you touching SQL. |
+| `Put shop.example.com on this project.` | The domain skill adds it, tells you which DNS records to set, and requests the certificate once the name resolves. |
+| `Back this project up, then roll it back to yesterday's commit.` | A backup first, then the git rollback, with a check that the site still answers. |
+| `My contact form returns 403.` | The blocked-request skill finds the ModSecurity rule in the audit log and proposes the narrowest exception. |
+| `How is the server doing?` | A read-only report: failed projects, disk and RAM, certificates close to expiry. |
 | `List the projects on this engine.` | A read-only check that the connection works. An empty list on a new engine is a success. |
 
-The skills are `/engine:create-project` and `/engine:debug-project`. On Pi, Hermes and OpenClaw they are `/create-project` and `/debug-project`. The assistant also uses them on its own.
+| Skill | For |
+|:---|:---|
+| `create-project` | Create a project and deploy an app into it |
+| `debug-project` | A failed deploy or a site that does not answer |
+| `custom-domain` | Your own domain, DNS records, certificates, Cloudflare tunnels |
+| `backup-restore` | Backup targets, backups, restores |
+| `database` | MySQL databases, users, passwords, phpMyAdmin |
+| `git-release` | Pull, switch branch, roll back, deploy keys, staging and push to production |
+| `access-and-jobs` | FTP/SFTP accounts, password-protected sites, cron jobs |
+| `php-tuning` | PHP version and settings such as `memory_limit` |
+| `blocked-request` | 403s from ModSecurity, firewall rules, lockouts |
+| `app-admin` | The app's own users, one-click admin login, WP-CLI |
+| `site-report` | Visitors, bandwidth, disk, a Lighthouse speed report |
+| `server-health` | A read-only check of the whole server |
+| `server-maintenance` | Engine update, webserver, mail, the engine's certificate |
+
+In Claude Code they are `/engine:<skill>`, e.g. `/engine:create-project`. On Pi, Hermes and OpenClaw they are `/<skill>`. The assistant also uses them on its own.
 
 ---
 
@@ -199,8 +219,7 @@ On Cascade (the older Windsurf agent, no `devin` command), paste the MCP JSON fr
 
 ```bash
 mkdir -p ~/.codeium/windsurf/skills
-ln -s /path/to/agent-skills/engine/skills/create-project ~/.codeium/windsurf/skills/create-project
-ln -s /path/to/agent-skills/engine/skills/debug-project ~/.codeium/windsurf/skills/debug-project
+for s in /path/to/agent-skills/engine/skills/*/; do ln -s "$s" ~/.codeium/windsurf/skills/; done
 ```
 
 </details>

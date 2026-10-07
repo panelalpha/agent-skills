@@ -11,7 +11,7 @@
     {
       "name": "engine",
       "source": "./engine",
-      "description": "PanelAlpha Engine: its MCP server plus project creation and debugging skills",
+      "description": "PanelAlpha Engine: its MCP server plus skills for deploying, debugging and running projects",
       "version": "0.1.0"
     }
   ]
