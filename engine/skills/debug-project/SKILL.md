@@ -12,10 +12,10 @@ Not connected? Run `pae connect` on the engine host - it prints the setup for ea
 ## 1. Check status
 
 - `project_get` - under `details`: `deployment_status`, `deployment_warnings`, `health_healthy`, `health_failed_checks`, `deploy_port`, `app_port`. While a deploy runs the status keys are absent.
-- Deployed by `project_create`: `task_get` with the task `id` - `status`, `details.error`; `task_log_list` with `after_id` for the log lines
-- Deployed by `project_rebuild` / `project_deploy_archive`: `deploy_log_get` with `offset: 100000` - `status`, `error`, and `timings.timeline`, which already holds every milestone and the app's first output lines
+- The deploy's task (`project_create`, `project_rebuild` and `project_deploy_archive` all return one): `task_get` with the task `id` - `status`, `details.error`, `details.problems`; `task_log_list` with `after_id` for the log lines
+- No task id at hand: `deploy_log_get` with `offset: 100000` - `status`, `error`, and `timings.timeline`, which already holds every milestone and the app's first output lines
 
-Judge by `status`, never by `stage`: `stage` stays `running` after the deploy has ended. Still `queued` or `running`? Wait and poll every 20-30 s; it is not a failure, and a client timeout on the deploy call is not one either - never start a second deploy. Stuck (a stage not advancing for many minutes, no new log lines): `deploy_cancel`, or `task_cancel` for a `project_create` task.
+Judge by `status`, never by `stage`: `stage` stays `running` after the deploy has ended. Still `queued` or `running`? Wait and poll every 20-30 s; it is not a failure, and a `409` from a deploy call names the `task_id` of the one already running - never start a second deploy. Stuck (a stage not advancing for many minutes, no new log lines): `task_cancel`, or `deploy_cancel` when there is no task.
 
 `partial` means the container started and something is wrong - possibly that **nothing answers at all** (`health_healthy: false`). It carries no `problems[].code`; the diagnosis is in `details.deployment_warnings` and `details.health_failed_checks` (each an `id` and a message - `app-port-silent` names the port and the address the app listens on). Fix from those lines.
 
@@ -38,7 +38,7 @@ A failed deploy returns `problems[].code`. Show the user the `message` and fix b
 | `repo-auth-failed`, `repo-not-found` | check the URL; a private repo needs `git_token` as a `vault:<ref>` (see **create-project**) |
 | `app_did_not_start` | go to step 3 |
 | `deploy_cancelled` | somebody called `deploy_cancel` - nothing to fix |
-| `deploy_failed`, or any code not listed | the engine did not recognise the failure: read the log from `deploy_log_offset` with `deploy_log_get` (a `project_create` deploy: `task_log_list`) - the command's own output is there |
+| `deploy_failed`, or any code not listed | the engine did not recognise the failure: read the log from `deploy_log_offset` with `deploy_log_get` (or `task_log_list` on the task) - the command's own output is there |
 
 ## 3. Read the app logs
 

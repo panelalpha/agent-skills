@@ -72,17 +72,17 @@ Call `project_create` without `git_repo`. The task ends `completed` with `detail
 
 ## 6. Follow the deploy
 
-After `project_create`, follow the task:
+`project_create`, `project_rebuild` and `project_deploy_archive` all answer at once with a task `id`. Follow it:
 - `task_get` - `id` from step 3: `status` `queued` / `running` / `completed` / `failed` / `cancelled`, the first log lines and `next_after_id`
 - `task_log_list` - `id`, `after_id: <next_after_id>` - only the new log lines. In both calls each line's `log` is a JSON string holding `ts`, `stage`, `level`, `msg`; parse it
 - `completed` - `details.deployment_status` is `success`, or `partial` (step 7); `details.waiting_for_files: true` → step 4
 - `failed` - the reason is `details.error`, the stage is in the last log lines. A failed create may roll the account back: `project_get` still finds it → fix and `project_rebuild`; 404 → fix and `project_create` again
 
-`project_rebuild` and `project_deploy_archive` answer only when the deploy has finished - up to several minutes. **A client timeout on them is your timeout, not a failed deploy: it keeps running.** Do not call them again; follow it with `deploy_log_get`:
+A `409` from a deploy call means one is already running: follow the `task_id` it names (`deploy_log_get` when that is null) - never call again. `zip_path` is refused on a git project.
+
+`deploy_log_get` reads the same deploy from the file log, as a cross-check or when there is no task:
 - `offset: 100000` - no log lines: `status` (`running` / `success` / `partial` / `failed` / `cancelled`), `error`, and the milestone `timings`. Judge by `status` - `stage` stays `running` after the deploy ends
 - `offset: 0` - the full log (`next_offset` to continue)
-
-For a `project_create` deploy, follow the task; `deploy_log_get` reads the same deploy and is fine as a cross-check.
 
 Deploys take ~5 s (static) to ~6 min (Laravel, Next.js). Poll every 20-30 s, and never start a second deploy of a project while one is `queued` or `running`.
 Failed → use the **debug-project** skill.
@@ -110,5 +110,5 @@ Offer it once the site works. `git_deploy_hook_create` - `provider` (`github`, `
 - Ask before `project_delete`, `project_suspend` or any `*_delete`.
 - Never ask for a secret in chat and never repeat one back: use the vault.
 - Never show `.env` values; never run seed scripts unless the user asks.
-- Never re-run a deploy call after a timeout; follow the one that is running.
+- Never start a second deploy while one runs; follow the task of the one that is running.
 - Branch on `problems[].code`, not on the message text.
